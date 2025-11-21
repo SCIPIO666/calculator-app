@@ -10,10 +10,10 @@ const buttons = {
     mr: getButton("mr"),
     mMinus: getButton("m-minus"),
     mPlus: getButton("m-plus"),
+    del: getButton("del"), 
     
     // Utility and Special Keys
     ac: getButton("ac"),
-    del: getButton("del"), //not yet added
     squareRoot: getButton("square-root"),
     percentage: getButton("percentage"),
     convertPosNeg: getButton("positive-negative"),
@@ -44,10 +44,6 @@ const buttons = {
     oneDecimal: getButton("r0-zero-decimal"),
     twoDecimal: getButton("r2-two-decimal")
 };
-buttons.mMinus.addEventListener("click",e=>{
-    e.target.style.backgroundColor="pink";
-})
-
 class ArithmeticOperations{
     constructor(a,b){
         this.a=a;
