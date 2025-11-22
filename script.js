@@ -12,8 +12,6 @@ let calculatorState = {
 };
 
 //---------------------------------------------------------------------------------//
-
-
 class Display{
     constructor(displayPanel){
         this.displayPanel=displayPanel;
@@ -27,10 +25,6 @@ class Display{
 }
 
 const displays=new Display(displayPanel);//to handle all display actions
-
-function initializeCalculator(){
-
-}//on content loaded
 
 function getButton(classname){
     const button=document.querySelector(`.${classname}`);
@@ -203,3 +197,18 @@ class HandleButtonClicks{
     }
 }
 
+//---------------------------------------------initializing  the calculator-----------------------------//
+function initializeCalculator(){
+    const allButtons=document.querySelectorAll(".button");
+    allButtons.forEach(button=>{
+        button.addEventListener("click",e=>{
+                const buttonClick= new HandleButtonClicks(e.target,calculatorState,displays,calculate);
+                buttonClick.updateState();
+        });
+    });
+}//on content loaded
+displays("");
+window.addEventListener('DOMContentLoaded', initializeCalculator); 
+initializeCalculator();
+
+//---------------------------------------------initializing  the calculator-----------------------------//
