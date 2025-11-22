@@ -1,12 +1,29 @@
 const displayPanel=document.querySelector(".display");
 let clickedSteps=[];
 let latestResult;
-let calculationsMemory={};
+let calculationsMemory=[];
+class Display{
+    constructor(displayPanel){
+        this.displayPanel=displayPanel;
+    }
+    clearDisplay(){
+        this.displayPanel.textContent="";
+    } 
+    renderDisplay(content){
+        this. displayPanel.textContent=content;
+    }
+}
+
+const displays=new Display(displayPanel);//to handle all display actions
+
+function initializeCalculator(){
+
+}//on content loaded
 
 function getButton(classname){
     const button=document.querySelector(`.${classname}`);
     return button;
-}
+}//helper function
 
 const buttons = {
     // Memory Operations (r1)
@@ -47,11 +64,9 @@ const buttons = {
     decimal: getButton("decimal"), 
     oneDecimal: getButton("r0-zero-decimal"),
     twoDecimal: getButton("r2-two-decimal")
-};
+};//all the buttons
 
-function initializeCalculator(){
 
-}
 
 class SpecialOperations{
     constructor(number,symbol){
@@ -87,46 +102,39 @@ function calculate(a, b, operator) {
     }
 }
 
-class Display{
-    constructor(displayPanel){
-        this.displayPanel=displayPanel;
-    }
-    clearDisplay(){
-        this.displayPanel.textContent="";
-    } 
-    renderDisplay(content){
-        this. displayPanel.textContent=content;
-    }
+function checkType(button){
+switch(button){
+    case button.classList.contains("number") : return "number";
+    case button.classList.contains("del") : return "delete";
+    case button.classList.contains("mr") : return "memory recall";
+    case button.classList.contains("mc") : return "memory clear";
+    case button.classList.contains("m-minus") : return "memory minus";
+    case button.classList.contains("m-plus") : return "memory plus";
+    case button.classList.contains("ac") : return "ac"; //and ce
+     case button.classList.contains("square-root") : return "square root";
+    case button.classList.contains("percentage") : return "percentage";
+    case button.classList.contains("divide") : return "divide";
+    case button.classList.contains("multiply") : return "delete";
+    case button.classList.contains("subtract") : return "delete";
+    case button.classList.contains("positive-negative") : return "delete";
+    case button.classList.contains("equals") : return "delete";
+    case button.classList.contains("decimal") : return "delete";
+    case button.classList.contains("exponent") : return "delete";
+    case button.classList.contains("r2-two-decimal") : return "delete";
+    case button.classList.contains("r0-zero-decimal") : return "delete";           
 }
-
-const displays=new Display(displayPanel);
+}
 
 
 function limitCalculatedStepsToThree(){
-    const allNumbers=document.querySelectorAll(".numbers");
-    allNumbers.forEach(number=>{
-        number.addEventListener("click",e=>{
-            clickedSteps.length<3 ? clickedSteps.push(e.target.textContent)  : handleExtraSteps(clickedSteps,e.target.textContent);
-            clickedSteps.push(e.target.textContent);
-            displays.renderDisplay(displayPanel.textContent+e.target.textContent);//no calculations yet,only displaying
-        });
-    });
+
 }
 
 function handleExtraSteps(arrayOfSteps,latestStep){
 
-    if(arrayOfSteps.length==3){
-        savePreviousCalculationToMemory();//to save previous calculation and carry over result
-        arrayOfSteps.push(latestStep);
-        latestResult=calculate(arrayOfSteps[0],arrayOfSteps[2],arrayOfSteps[1]);
-        displays.renderDisplay(latestResult);
-        //the display to compute as soon as it has two operands and an operator so that the next input will be aggregated to the calculations chain
-    }else{
-
-        arrayOfSteps.push(latestStep);//arrayOfSteps  keeps track of buttons pressed and their implications,and determines end and begin of new calculation
-        latestResult=calculate(arrayOfSteps[0],arrayOfSteps[2],arrayOfSteps[1]);
-        displays.renderDisplay(latestResult);
-    }
  
 }
+ function savePreviousCalculationToMemory(array){
+
+ }
 
