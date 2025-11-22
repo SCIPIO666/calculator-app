@@ -107,7 +107,8 @@ function limitCalculatedStepsToThree(){
     allNumbers.forEach(number=>{
         number.addEventListener("click",e=>{
             clickedSteps.length<3 ? clickedSteps.push(e.target.textContent)  : handleExtraSteps(clickedSteps,e.target.textContent);
-            displays.renderDisplay(displayPanel.textContent+number.textContent);
+            clickedSteps.push(e.target.textContent);
+            displays.renderDisplay(displayPanel.textContent+e.target.textContent);//no calculations yet,only displaying
         });
     });
 }
@@ -121,6 +122,7 @@ function handleExtraSteps(arrayOfSteps,latestStep){
         displays.renderDisplay(latestResult);
         //the display to compute as soon as it has two operands and an operator so that the next input will be aggregated to the calculations chain
     }else{
+
         arrayOfSteps.push(latestStep);//arrayOfSteps  keeps track of buttons pressed and their implications,and determines end and begin of new calculation
         latestResult=calculate(arrayOfSteps[0],arrayOfSteps[2],arrayOfSteps[1]);
         displays.renderDisplay(latestResult);
