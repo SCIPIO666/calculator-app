@@ -151,7 +151,12 @@ class HandleButtonClicks{
                 this.DisplayInstance.renderDisplay(this.state.currentOperand);//display joined value
                 break;
 
-            case "operator": // +, -, *, ...time to graduate current number to previous number status,and store the operator
+            case "add": 
+            case "subtract":
+            case "multiply":
+            case "operator":               
+            case "divide":     // +, -, *, ...time to graduate current number to previous number status,and store the operator 
+                if(this.state.operation!=="" ) return;                   
                 if (this.state.previousOperand !== "" && this.state.currentOperand !== "") {
                     this.result = this.calculateFunction(
                         parseFloat(this.state.previousOperand),
@@ -167,8 +172,7 @@ class HandleButtonClicks{
                     this.state.currentOperand = "";
                 }
                 this.state.operation = this.button.textContent;
-                this.state.isResultDisplayed = false;
-                
+                this.state.isResultDisplayed = false;            
                 break;
 
             case "equals":
@@ -201,14 +205,12 @@ class HandleButtonClicks{
 function initializeCalculator(){
     const allButtons=document.querySelectorAll(".button");
     allButtons.forEach(button=>{
+
         button.addEventListener("click",e=>{
-                const buttonClick= new HandleButtonClicks(e.target,calculatorState,displays,calculate);
+                const buttonClick= new HandleButtonClicks(button,calculatorState,displays,calculate);
                 buttonClick.updateState();
         });
     });
 }//on content loaded
-displays("");
-window.addEventListener('DOMContentLoaded', initializeCalculator); 
-initializeCalculator();
-
+initializeCalculator()
 //---------------------------------------------initializing  the calculator-----------------------------//
