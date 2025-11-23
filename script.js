@@ -1,30 +1,42 @@
 //------------global variables for state management--------------------------------//
-const displayPanel=document.querySelector(".display");//display screen
+const mathDisplayPanel=document.querySelector("#math");//display screen
+const resultDisplayPanel=document.querySelector("#result");//display screen
 let latestResult;//calculate latest computation prompt
 let CurrentState=[];//to keep track of user current step
 let calculationsMemory=[];//save objects of operators ,operands and results for each computation
 
 let calculatorState = {
-    currentOperand: '',     // The number currently being entered 
-    previousOperand: '',    // The first number 
-    operation: undefined,   // The operator (+, -, *, etc.)
+    currentOperand: "",     // The number currently being entered 
+    previousOperand: "",    // The first number 
+    operation: "",   // The operator (+, -, *, etc.)
     isResultDisplayed: false // Flag for new input
 };
 
 //---------------------------------------------------------------------------------//
 class Display{
-    constructor(displayPanel){
-        this.displayPanel=displayPanel;
+    constructor(mathDisplayPanel,resultDisplayPanel){
+        this.mathDisplayPanel=mathDisplayPanel;
+        this.resultDisplayPanel=resultDisplayPanel;
     }
     clearDisplay(){
-        this.displayPanel.textContent="";
+        this.mathDisplayPanel.textContent="";
+        this.resultDisplayPanel.textContent="";
     } 
-    renderDisplay(content){
-        this. displayPanel.textContent=content;
+    renderDisplay(mathContent,resultContent){
+        this.mathDisplayPanel.classList.remove="reduce";
+        this.resultDisplayPanel.classList.remove="reduce";
+        this.mathDisplayPanel.textContent=mathContent;
+        this.resultDisplayPanel.textContent=resultContent;
+    }
+    reduceMathFont(){
+        this.mathDisplayPanel.classList.add="reduce";
+    }
+    reduceResultFont(){
+        this.resultDisplayPanel.classList.add="reduce";  
     }
 }
 
-const displays=new Display(displayPanel);//to handle all display actions
+const displays=new Display(mathDisplayPanel,resultDisplayPanel);//to handle all display actions
 
 function getButton(classname){
     const button=document.querySelector(`.${classname}`);
@@ -100,8 +112,8 @@ function calculate(a, b, operator) {
     switch (operator) {
         case "+": return mathOperation.add();
         case "-": return mathOperation.subtract();
-        case "*": return mathOperation.multiply();
-        case "/": return mathOperation.divide();
+        case "x": return mathOperation.multiply();
+        case "÷": return mathOperation.divide();
         case "xʸ": return mathOperation.raiseToPower();
         case "√x": return mathOperation.squareRoot();
         default: throw new error("Error: Invalid operator");
@@ -120,6 +132,7 @@ switch(true){
      case button.classList.contains("square-root") : return "square root";
     case button.classList.contains("percentage") : return "percentage";
     case button.classList.contains("divide") : return "divide";
+    case button.classList.contains("add") : return "add";    
     case button.classList.contains("multiply") : return "multiply";
     case button.classList.contains("subtract") : return "subtract";
     case button.classList.contains("operator") : return "operator";    
@@ -140,13 +153,14 @@ class HandleButtonClicks{
         this.DisplayInstance= DisplayInstance;  //displays
         this.calculateFunction=calculateFunction;//calculate(a, b, operator)
         this.result= undefined;
+        this.math=undefined;
     }
 
     updateState() {
         switch (this.buttonType) {
             case "number":
             case "decimal"://pressed decimal/number goes to join current stand alone number
-                if (this.buttonType === 'decimal' && this.state.currentOperand.includes(".")) return;//prevent double decimal click
+                if (this.buttonType === "decimal" && this.state.currentOperand.includes(".")) return;//prevent double decimal click
                 this.state.currentOperand += this.button.textContent;
                 this.DisplayInstance.renderDisplay(this.state.currentOperand);//display joined value
                 break;
@@ -154,47 +168,73 @@ class HandleButtonClicks{
             case "add": 
             case "subtract":
             case "multiply":
-            case "operator":               
-            case "divide":     // +, -, *, ...time to graduate current number to previous number status,and store the operator 
-                if(this.state.operation!=="" ) return;                   
-                if (this.state.previousOperand !== "" && this.state.currentOperand !== "") {
+            case "operator":      
+            case "divide":// +, -, *, /,...time to graduate current number to previous number status,and store the operator
+                if (this.state.previousOperand === "" && this.state.currentOperand === "") return;                   
+                if(this.state.previousOperand === "" && this.state.currentOperand !== "" && this.state.operation===""){
+                    // Graduate current to previous if this is the first operator
+                    this.state.previousOperand = this.state.currentOperand;
+                    this.state.currentOperand = "";
+                    this.state.operation=this.button.textContent
+                    this.math=`${this.state.previousOperand}${this.state.operation}`;
+                    this.DisplayInstance.renderDisplay(this.math,"");
+                        if(this.math.length>8){
+                            this.DisplayInstance.reduceMathFont();
+                        }                     
+                    this.state.isResultDisplayed = false;                    
+                }
+                 if (this.state.previousOperand !== "" && this.state.currentOperand !== "" && this.state.operation !=="") {
+                        
+                    console.log(this.state)
                     this.result = this.calculateFunction(
                         parseFloat(this.state.previousOperand),
                         parseFloat(this.state.currentOperand),
                         this.state.operation
                     );
-                    this.DisplayInstance.renderDisplay(this.result);
-                    this.state.previousOperand = this.result.toString();
+                    this.math=`${this.state.previousOperand}${this.state.operation}${this.state.currentOperand}`;                    
+                    this.DisplayInstance.renderDisplay(this.math,this.result);
+                        if(this.math.length>8){
+                            this.DisplayInstance.reduceMathFont();
+                        } 
+                        if(this.result.length>8){
+                            this.DisplayInstance.reduceResultFont();
+                        }                     
+                    this.state.previousOperand = this.result;//as soon as calculated graduated t previous operand .toString()
                     this.state.currentOperand = "";
-                } else {
-                    // Graduate current to previous if this is the first operator
-                    this.state.previousOperand = this.state.currentOperand;
-                    this.state.currentOperand = "";
-                }
-                this.state.operation = this.button.textContent;
-                this.state.isResultDisplayed = false;            
+                    this.state.isResultDisplayed = true;                       
+                }                     
                 break;
 
             case "equals":
-                if (this.state.previousOperand === "" || this.state.currentOperand === "") return;
-                this.result = this.calculateFunction(
-                    parseFloat(this.state.previousOperand),
-                    parseFloat(this.state.currentOperand),
-                    this.state.operation
-                );//utilizing the global calculate function
-                // Update state
-                this.state.currentOperand = this.result.toString(); //the result stored as current operand now
-                this.state.previousOperand = "";
-                this.state.operation = undefined;
-                this.state.isResultDisplayed = true;    
-                this.DisplayInstance.renderDisplay(this.result);
+                if (this.state.previousOperand === "" || this.state.currentOperand === "" || this.state.operation==="" ) return;
+                if (this.state.previousOperand !== "" && this.state.currentOperand !== "" && this.state.operation!=="" ){
+                        this.result = this.calculateFunction(
+                        parseFloat(this.state.previousOperand),
+                        parseFloat(this.state.currentOperand),
+                        this.state.operation
+                        );//utilizing the global calculate function
+                        // Update state
+                    this.math=`${this.state.previousOperand}${this.state.operation}${this.state.currentOperand}`;                    
+                    this.DisplayInstance.renderDisplay(this.math,this.result);
+                        if(this.math.length>8){
+                            this.DisplayInstance.reduceMathFont();
+                        } 
+                        if(this.result.length>8){
+                            this.DisplayInstance.reduceResultFont();
+                        }              
+                    this.state.currentOperand = this.result; //the result stored as current operand now .toString()
+                    this.state.previousOperand = "";
+                    this.state.operation = "";
+                    this.state.isResultDisplayed = true;
+                }
+     
                 break;
 
             case "ac":
                 this.DisplayInstance.renderDisplay("");//clear display
                 this.state.currentOperand = "";
                 this.state.previousOperand = "";
-                this.state.operation = undefined;
+                this.state.operation = "";
                 this.state.isResultDisplayed = false;
                 break;
         }
@@ -209,6 +249,7 @@ function initializeCalculator(){
         button.addEventListener("click",e=>{
                 const buttonClick= new HandleButtonClicks(button,calculatorState,displays,calculate);
                 buttonClick.updateState();
+                console.log(calculatorState)
         });
     });
 }//on content loaded
