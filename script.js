@@ -23,8 +23,6 @@ class Display{
         this.resultDisplayPanel.textContent="";
     } 
     renderDisplay(mathContent,resultContent){
-        this.mathDisplayPanel.classList.remove="reduce";
-        this.resultDisplayPanel.classList.remove="reduce";
         this.mathDisplayPanel.textContent=mathContent;
         this.resultDisplayPanel.textContent=resultContent;
     }
@@ -177,10 +175,7 @@ class HandleButtonClicks{
                     this.state.currentOperand = "";
                     this.state.operation=this.button.textContent
                     this.math=`${this.state.previousOperand}${this.state.operation}`;
-                    this.DisplayInstance.renderDisplay(this.math,"");
-                        if(this.math.length>8){
-                            this.DisplayInstance.reduceMathFont();
-                        }                     
+                    this.DisplayInstance.renderDisplay(this.math,"");                    
                     this.state.isResultDisplayed = false;                    
                 }
                  if (this.state.previousOperand !== "" && this.state.currentOperand !== "" && this.state.operation !=="") {
@@ -192,13 +187,7 @@ class HandleButtonClicks{
                         this.state.operation
                     );
                     this.math=`${this.state.previousOperand}${this.state.operation}${this.state.currentOperand}`;                    
-                    this.DisplayInstance.renderDisplay(this.math,this.result);
-                        if(this.math.length>8){
-                            this.DisplayInstance.reduceMathFont();
-                        } 
-                        if(this.result.length>8){
-                            this.DisplayInstance.reduceResultFont();
-                        }                     
+                    this.DisplayInstance.renderDisplay(this.math,this.result);                    
                     this.state.previousOperand = this.result;//as soon as calculated graduated t previous operand .toString()
                     this.state.currentOperand = "";
                     this.state.isResultDisplayed = true;                       
@@ -215,13 +204,7 @@ class HandleButtonClicks{
                         );//utilizing the global calculate function
                         // Update state
                     this.math=`${this.state.previousOperand}${this.state.operation}${this.state.currentOperand}`;                    
-                    this.DisplayInstance.renderDisplay(this.math,this.result);
-                        if(this.math.length>8){
-                            this.DisplayInstance.reduceMathFont();
-                        } 
-                        if(this.result.length>8){
-                            this.DisplayInstance.reduceResultFont();
-                        }              
+                    this.DisplayInstance.renderDisplay(this.math,this.result);             
                     this.state.currentOperand = this.result; //the result stored as current operand now .toString()
                     this.state.previousOperand = "";
                     this.state.operation = "";

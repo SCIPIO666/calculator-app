@@ -90,7 +90,7 @@ p {
     margin: 3px auto;
     margin-top: 0;
     border-radius: 5px;
-    font-size: 1.7em;
+    font-size: 1.2em;
     flex-wrap: wrap;
     text-align: right;
 
@@ -161,9 +161,8 @@ margin: 5px 10px 5px 5px;
     flex-wrap: wrap;
     text-align: center;
     align-items: center;
-    justify-content: center;
-    border: solid .5px blue;
-    padding: 2px;
+    justify-content: flex-start;
+    padding: 0 2px;
     margin-bottom: 2%;
 }
 #result{
@@ -174,10 +173,7 @@ margin: 5px 10px 5px 5px;
     flex-wrap: wrap;
     color: blue;
     text-align: center;
-    justify-content: center;
+    justify-content: flex-end;
     align-items: center;
-    padding: 2px;
-}
-.reduce{
-    font-size: .5em;
+    padding: 0 2px;
 }
