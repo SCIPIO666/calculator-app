@@ -9,10 +9,14 @@ let calculatorState = {
     currentOperand: "",     // The number currently being entered 
     previousOperand: "",    // The first number 
     operation: "",   // The operator (+, -, *, etc.)
-    isResultDisplayed: false // Flag for new input
+    isResultDisplayed: false ,// Flag for new input
+    percentageType:"",
+    currentOperandIsPercentageValue: false,
 };
 
+
 //---------------------------------------------------------------------------------//
+
 class Display{
     constructor(mathDisplayPanel,resultDisplayPanel){
         this.mathDisplayPanel=mathDisplayPanel;
@@ -25,12 +29,6 @@ class Display{
     renderDisplay(mathContent,resultContent){
         this.mathDisplayPanel.textContent=mathContent;
         this.resultDisplayPanel.textContent=resultContent;
-    }
-    reduceMathFont(){
-        this.mathDisplayPanel.classList.add="reduce";
-    }
-    reduceResultFont(){
-        this.resultDisplayPanel.classList.add="reduce";  
     }
 }
 
@@ -98,12 +96,68 @@ class ArithmeticOperations{
     }
     add(){return this.a + this.b;}
     subtract(){return this.a - this.b;}
-    multiply(){return this.a * this.b;}
-    divide(){return this.a / this.b;}
-    raiseToPower(){return this.a ** this.b;}
-    squareRoot(){return this.a ** (1/this.b);}
+    multiply(){
+        if(this.a==0 || this.b==0){
+            this.reject("multiply");
+            return
+        }
+        return this.a * this.b;
+    }
+    divide(){
+        if(this.a==0 || this.b==0){
+            this.reject("divide");
+            return
+        }
+        return this.a / this.b;
+    }
+    raiseToPower(){
+        return this.a ** this.b;
+    }
+    squareRoot(){
+        if(this.a==0 || this.b==0){
+            this.reject("squareRoot");
+            return
+        }
+        return this.a ** (1/this.b);
+    }
+    reject(method){
+            console.error(`invalid: cant ${method} with zero`);
+    }
+
 }
 
+function percentageMathHandler(type,a,b=""){
+    
+    const percentageState={
+         percentageType : type,
+         operand1: parseFloat(a),
+         operand2: parseFloat(b),
+         percentageResult:"",
+        isResultDisplayed: false ,// Flag for new input   
+    }
+    let math;
+    switch (percentageState.percentageType){    
+        case "+" : //i.e 12 plus 10% is? ---> 12 + (12 × 10%) = 13.2-- 12 + 10 %  then =
+            math=(percentageState.operand1) + ((percentageState.operand2/100)*(percentageState.operand1));
+            return math.toFixed(1);
+        break;
+
+        case "-": //10 minus 10% is?---->10 - (10 × 10%) = 9----- 10 − 10 %   then =
+            math=(percentageState.operand1) - ((percentageState.operand2/100)*(percentageState.operand1));
+            return math.toFixed(1);
+        break;
+
+        case "x"://10% of 15 is?------->15 × 10% = 1.5 --------- 15 × 10 %   then =
+            math=(percentageState.operand2/100)*(percentageState.operand1);
+            return math.toFixed(1);
+        break;
+
+        case "÷"://15 is 10% of ?------> 15/10%=150------------- 15 ÷ 10 %   then =
+            math=(percentageState.operand1*100) / percentageState.operand2;
+            return math.toFixed(1);
+        break;
+    }        
+}
 function calculate(a, b, operator) {
     let mathOperation = new ArithmeticOperations(a, b);
 
@@ -115,6 +169,7 @@ function calculate(a, b, operator) {
         case "xʸ": return mathOperation.raiseToPower();
         case "√x": return mathOperation.squareRoot();
         default: throw new error("Error: Invalid operator");
+
     }
 }
 
@@ -137,19 +192,21 @@ switch(true){
     case button.classList.contains("positive-negative") : return "positive-negative";
     case button.classList.contains("equals") : return "equals";
     case button.classList.contains("decimal") : return "decimal";
+    case button.classList.contains("pie") : return "pie";    
     case button.classList.contains("exponent") : return "exponent";
     case button.classList.contains("r2-two-decimal") : return "two decimals";
     case button.classList.contains("r0-zero-decimal") : return "zero/no decimals";  
-    default: return "unknown";         
+    default: return "unknown";             
 }
 }
 class HandleButtonClicks{
-    constructor(button,calculatorState,DisplayInstance,calculateFunction){
+    constructor(button,calculatorState,DisplayInstance,calculateFunction,percentageFunction){
         this.button=button;
         this.buttonType=checkType(this.button);
         this.state= calculatorState; //calculatorState
         this.DisplayInstance= DisplayInstance;  //displays
         this.calculateFunction=calculateFunction;//calculate(a, b, operator)
+        this.percentageFunction=percentageFunction;//percentageOperations(typeOfPercentageOperation)
         this.result= undefined;
         this.math=undefined;
     }
@@ -160,7 +217,7 @@ class HandleButtonClicks{
             case "decimal"://pressed decimal/number goes to join current stand alone number
                 if (this.buttonType === "decimal" && this.state.currentOperand.includes(".")) return;//prevent double decimal click
                 this.state.currentOperand += this.button.textContent;
-                this.DisplayInstance.renderDisplay(this.state.currentOperand);//display joined value
+                this.DisplayInstance.renderDisplay(`${this.state.previousOperand.toLocaleString()} ${this.state.operation} ${this.state.currentOperand.toLocaleString()}`);//display joined value
                 break;
 
             case "add": 
@@ -173,22 +230,33 @@ class HandleButtonClicks{
                     // Graduate current to previous if this is the first operator
                     this.state.previousOperand = this.state.currentOperand;
                     this.state.currentOperand = "";
-                    this.state.operation=this.button.textContent
-                    this.math=`${this.state.previousOperand}${this.state.operation}`;
-                    this.DisplayInstance.renderDisplay(this.math,"");                    
+                    this.state.operation=this.button.textContent;
+                    this.result="";
+                    this.math=`${this.state.previousOperand} ${(this.state.operation)}`;
+                    this.DisplayInstance.renderDisplay(this.math.toLocaleString(),this.result);                    
                     this.state.isResultDisplayed = false;                    
                 }
+               if(this.state.previousOperand === "" && this.state.currentOperand !== "" && this.state.operation==="" && this.state.percentageType==="" && this.state.currentOperandIsPercentageValue===true){//handle percentage operations
+                    // Graduate current to previous if this is the first operator
+                    this.state.previousOperand = this.state.currentOperand;
+                    this.state.currentOperand = "";
+                    this.state.operation=this.button.textContent;
+                    this.state.isResultDisplayed = false;
+                    this.state.currentOperandIsPercentageValue=false; 
+                    this.result="";                          
+                    this.math=`${this.state.previousOperand} ${(this.state.operation)}`;
+                    this.DisplayInstance.renderDisplay(this.math.toLocaleString(),this.result);                    
+                                 
+                }               
                  if (this.state.previousOperand !== "" && this.state.currentOperand !== "" && this.state.operation !=="") {
-                        
-                    console.log(this.state)
                     this.result = this.calculateFunction(
                         parseFloat(this.state.previousOperand),
                         parseFloat(this.state.currentOperand),
                         this.state.operation
                     );
-                    this.math=`${this.state.previousOperand}${this.state.operation}${this.state.currentOperand}`;                    
-                    this.DisplayInstance.renderDisplay(this.math,this.result);                    
-                    this.state.previousOperand = this.result;//as soon as calculated graduated t previous operand .toString()
+                    this.math=`${this.state.previousOperand.toLocaleString()} ${this.state.operation} ${this.state.currentOperand.toLocaleString()}`;                    
+                    this.DisplayInstance.renderDisplay(this.math,this.result.toLocaleString());                    
+                    this.state.previousOperand = this.result;//as soon as calculated graduated to previous operand .toString()
                     this.state.currentOperand = "";
                     this.state.isResultDisplayed = true;                       
                 }                     
@@ -203,8 +271,8 @@ class HandleButtonClicks{
                         this.state.operation
                         );//utilizing the global calculate function
                         // Update state
-                    this.math=`${this.state.previousOperand}${this.state.operation}${this.state.currentOperand}`;                    
-                    this.DisplayInstance.renderDisplay(this.math,this.result);             
+                    this.math=`${this.state.previousOperand} ${this.state.operation} ${this.state.currentOperand}`;                    
+                    this.DisplayInstance.renderDisplay(this.math.toLocaleString(),this.result.toLocaleString());             
                     this.state.currentOperand = this.result; //the result stored as current operand now .toString()
                     this.state.previousOperand = "";
                     this.state.operation = "";
@@ -220,6 +288,68 @@ class HandleButtonClicks{
                 this.state.operation = "";
                 this.state.isResultDisplayed = false;
                 break;
+        
+    ////////////////////////////unary operators///////////////////////////////
+// currentOperand: 6, previousOperand: "", operation: "", isResultDisplayed: true }
+        case "positive-negative":
+            if(this.state.currentOperand !=="" && this.state.isResultDisplayed===true){
+                this.state.currentOperand=parseFloat(this.state.currentOperand) * -1;
+                this.DisplayInstance.renderDisplay(this.state.currentOperand,""); 
+                this.state.isResultDisplayed= false;
+            }
+            this.state.currentOperand=this.state.currentOperand*-1;
+            this.DisplayInstance.renderDisplay(this.state.currentOperand,"")
+        break;
+
+        case "exponent":
+
+        break;
+
+        case "two decimals":
+            if(this.state.currentOperand==="") return;
+            if(this.state.currentOperand !==""){
+                this.state.currentOperand=parseFloat(this.state.currentOperand).toFixed(2);
+                this.DisplayInstance.renderDisplay(this.state.currentOperand,""); 
+                this.state.isResultDisplayed= false;
+            }
+        break;
+
+        case "zero/no decimals":
+            if(this.state.currentOperand==="") return;
+            if(this.state.currentOperand !==""){
+                this.state.currentOperand=parseFloat(this.state.currentOperand).toFixed(0);
+                this.DisplayInstance.renderDisplay(this.state.currentOperand,""); 
+                this.state.isResultDisplayed= false;
+            }            
+
+        break;
+
+        case "square root":
+
+        break;
+
+        case "percentage":
+           if(this.state.currentOperand==="" || this.state.previousOperand==="" || this.state.operation==="" ||this.state.operation===undefined) return;
+            this.state.percentageType=this.state.operation;
+            this.math=`${this.state.previousOperand} ${this.state.operation} ${this.state.currentOperand} % `;
+            this.result=this.percentageFunction(this.state.percentageType,this.state.previousOperand,this.state.currentOperand);
+            this.DisplayInstance.renderDisplay(this.math,this.result);
+            this.state.currentOperand=this.result;
+            this.previousOperand="";
+            this.state.isResultDisplayed=true;
+            this.state.operation="";
+            this.state.percentageType="";
+            this.state.currentOperandIsPercentageValue=true;
+        break;
+
+        case "delete":
+
+        break;
+
+        case "pie":
+
+        break;
+
         }
     }
 }
@@ -230,7 +360,7 @@ function initializeCalculator(){
     allButtons.forEach(button=>{
 
         button.addEventListener("click",e=>{
-                const buttonClick= new HandleButtonClicks(button,calculatorState,displays,calculate);
+                const buttonClick= new HandleButtonClicks(button,calculatorState,displays,calculate,percentageMathHandler);
                 buttonClick.updateState();
                 console.log(calculatorState)
         });
