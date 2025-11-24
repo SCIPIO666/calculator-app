@@ -13,6 +13,7 @@ let calculatorState = {
     percentageType:"",
     currentOperandIsPercentageValue: false,
     resultsInMemory: [],//save calculated results
+    currentMemoryCalculation: "",
 };
 
 
@@ -196,7 +197,9 @@ switch(true){
     case button.classList.contains("pie") : return "pie";    
     case button.classList.contains("exponent") : return "exponent";
     case button.classList.contains("r2-two-decimal") : return "two decimals";
-    case button.classList.contains("r0-zero-decimal") : return "zero/no decimals";  
+    case button.classList.contains("r0-zero-decimal") : return "zero/no decimals"; 
+    case button.classList.contains("prev") : return "prev";
+    case button.classList.contains("next") : return "next";     
     default: return "unknown";             
 }
 }
@@ -211,10 +214,9 @@ class HandleButtonClicks{
         this.percentageFunction=percentageFunction;//percentageOperations(typeOfPercentageOperation)
         this.result= undefined;
         this.math=undefined;
-
     }
+
     updateMemory(){
-     //////////memory updating code/////////////
         let arrayLength=this.state.resultsInMemory.length;
         let memoryObject={//saving results to memory
              value1: this.state.previousOperand,
@@ -228,8 +230,37 @@ class HandleButtonClicks{
         }else{
             this.state.resultsInMemory[arrayLength]=memoryObject;
         }                
-/////////////////////////////////////////////     
     }
+
+
+    retrievePrevCalculation(){
+        const historyLength = this.state.resultsInMemory.length;
+        if (historyLength === 0) return;
+        let currentIndex = this.state.currentMemoryCalculation === ""? historyLength - 1 : this.state.currentMemoryCalculation;
+        // Decrementing the index, ensuring it doesn't go below 0
+        const newIndex = Math.max(0, currentIndex - 1);     
+        // Updating the state and display if the index changed
+        if (newIndex !== currentIndex || currentIndex === historyLength - 1) {
+            this.state.currentMemoryCalculation = newIndex;
+            const memoryItem = this.state.resultsInMemory[newIndex];
+            this.DisplayInstance.renderDisplay(memoryItem.mathDisplay, memoryItem.result);
+        }
+    }
+    retrieveNextCalculation(){
+        const historyLength = this.state.resultsInMemory.length;
+        if (historyLength === 0) return; 
+        const lastIndex = historyLength - 1;
+        // If it's the first time being called, starting at index 0.
+        let currentIndex = this.state.currentMemoryCalculation === "" ? 0: this.state.currentMemoryCalculation; 
+        // Incrementing the index, ensuring it doesn't go beyond the last index
+        const newIndex = Math.min(lastIndex, currentIndex + 1);
+        // Updating the state and display if the index changed
+        if (newIndex !== currentIndex || currentIndex === 0) {
+            this.state.currentMemoryCalculation = newIndex;
+            const memoryItem = this.state.resultsInMemory[newIndex];
+            this.DisplayInstance.renderDisplay(memoryItem.mathDisplay, memoryItem.result);
+        }
+    }    
     updateState() {
         switch (this.buttonType) {
             case "number":
@@ -313,7 +344,7 @@ class HandleButtonClicks{
                     }                                            
                     this.DisplayInstance.renderDisplay(this.math.toLocaleString(),this.result.toLocaleString()); 
 
-                    this.updateMemory()
+                    this.updateMemory();
                     //updating state                     
                     this.state.currentOperand = this.result; //the result stored as current operand now .toString()
                     this.state.previousOperand = "";
@@ -385,7 +416,7 @@ class HandleButtonClicks{
         break;
 
         case "memory recall":
-            this.memoryArray=[];
+
         break;
 
         case  "memory clear":
@@ -399,7 +430,15 @@ class HandleButtonClicks{
         case "memory plus":
 
         break;
-
+            
+        case "prev":
+            this.retrievePrevCalculation();
+            console.log(this.state.resultsInMemory);
+        break;
+        case  "next":
+            this.retrieveNextCalculation();
+            console.log(this.state.resultsInMemory);            
+        break;     
 
         }
     }
@@ -413,7 +452,7 @@ function initializeCalculator(){
         button.addEventListener("click",e=>{
                 const buttonClick= new HandleButtonClicks(button,calculatorState,displays,calculate,percentageMathHandler);
                 buttonClick.updateState();
-                console.log(calculatorState)
+                //console.log(calculatorState)
         });
     });
 }//on content loaded
