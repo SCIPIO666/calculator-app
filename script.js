@@ -12,6 +12,7 @@ let calculatorState = {
     isResultDisplayed: false ,// Flag for new input
     percentageType:"",
     currentOperandIsPercentageValue: false,
+    resultsInMemory: [],//save calculated results
 };
 
 
@@ -210,8 +211,25 @@ class HandleButtonClicks{
         this.percentageFunction=percentageFunction;//percentageOperations(typeOfPercentageOperation)
         this.result= undefined;
         this.math=undefined;
-    }
 
+    }
+    updateMemory(){
+     //////////memory updating code/////////////
+        let arrayLength=this.state.resultsInMemory.length;
+        let memoryObject={//saving results to memory
+             value1: this.state.previousOperand,
+            operator: this.state.operation,
+            value2:this.state.currentOperand,
+            result:this.result,
+            mathDisplay: this.math,
+        };
+        if(arrayLength<1){
+            this.state.resultsInMemory[0]=memoryObject;
+        }else{
+            this.state.resultsInMemory[arrayLength]=memoryObject;
+        }                
+/////////////////////////////////////////////     
+    }
     updateState() {
         switch (this.buttonType) {
             case "number":
@@ -270,7 +288,8 @@ class HandleButtonClicks{
                     );
 
                     this.math=`${this.state.previousOperand.toLocaleString()} ${this.state.operation} ${this.state.currentOperand.toLocaleString()}`;     
-                    this.DisplayInstance.renderDisplay(this.math,this.result.toLocaleString());                    
+                    this.DisplayInstance.renderDisplay(this.math,this.result.toLocaleString()); 
+                    this.updateMemory();                  
                     this.state.previousOperand = this.result;//as soon as calculated graduated to previous operand .toString()
                     this.state.currentOperand = "";
                     this.state.isResultDisplayed = true;                       
@@ -292,13 +311,17 @@ class HandleButtonClicks{
                     }else{
                         this.math=`${this.state.previousOperand} ${this.state.operation} ${this.state.currentOperand}`;  
                     }                                            
-                    this.DisplayInstance.renderDisplay(this.math.toLocaleString(),this.result.toLocaleString());             
+                    this.DisplayInstance.renderDisplay(this.math.toLocaleString(),this.result.toLocaleString()); 
+
+                    this.updateMemory()
+                    //updating state                     
                     this.state.currentOperand = this.result; //the result stored as current operand now .toString()
                     this.state.previousOperand = "";
                     this.state.operation = "";
                     this.state.isResultDisplayed = true;
                 }
-     
+                console.log(this.state.resultsInMemory)
+                console.log(this.state.resultsInMemory)
                 break;
 
             case "ac":
@@ -346,6 +369,9 @@ class HandleButtonClicks{
             this.math=`${this.state.previousOperand} ${this.state.operation} ${this.state.currentOperand} % `;
             this.result=this.percentageFunction(this.state.percentageType,this.state.previousOperand,this.state.currentOperand);
             this.DisplayInstance.renderDisplay(this.math,this.result);
+
+            this.updateMemory();
+            //resetting state
             this.state.currentOperand=this.result;
             this.previousOperand="";
             this.state.isResultDisplayed=true;
@@ -359,7 +385,7 @@ class HandleButtonClicks{
         break;
 
         case "memory recall":
-
+            this.memoryArray=[];
         break;
 
         case  "memory clear":
