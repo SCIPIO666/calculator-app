@@ -199,6 +199,7 @@ switch(true){
     default: return "unknown";             
 }
 }
+
 class HandleButtonClicks{
     constructor(button,calculatorState,DisplayInstance,calculateFunction,percentageFunction){
         this.button=button;
@@ -214,18 +215,29 @@ class HandleButtonClicks{
     updateState() {
         switch (this.buttonType) {
             case "number":
+            case "pie":   
             case "decimal"://pressed decimal/number goes to join current stand alone number
                 if (this.buttonType === "decimal" && this.state.currentOperand.includes(".")) return;//prevent double decimal click
-                this.state.currentOperand += this.button.textContent;
-                this.DisplayInstance.renderDisplay(`${this.state.previousOperand.toLocaleString()} ${this.state.operation} ${this.state.currentOperand.toLocaleString()}`);//display joined value
-                break;
+                if(this.buttonType === "pie" && this.state.currentOperand !=="") return;
+                if(this.buttonType==="pie" && this.state.currentOperand ===""){
+                            this.state.currentOperand = 3.1415926536;
+                            this.DisplayInstance.renderDisplay(`${this.state.previousOperand.toLocaleString()} ${this.state.operation} ${this.state.currentOperand.toLocaleString()}`,"");//display joined value  
+                            return;                          
+                    }else{
+                            this.state.currentOperand += this.button.textContent;
+                            this.DisplayInstance.renderDisplay(`${this.state.previousOperand.toLocaleString()} ${this.state.operation} ${this.state.currentOperand.toLocaleString()}`,"");//display joined value
+                    }
+            break;
 
             case "add": 
             case "subtract":
             case "multiply":
-            case "operator":      
+            case "operator":
+            case "xʸ":
+            case "square root":                
+            case "operator":                                  
             case "divide":// +, -, *, /,...time to graduate current number to previous number status,and store the operator
-                if (this.state.previousOperand === "" && this.state.currentOperand === "") return;                   
+
                 if(this.state.previousOperand === "" && this.state.currentOperand !== "" && this.state.operation===""){
                     // Graduate current to previous if this is the first operator
                     this.state.previousOperand = this.state.currentOperand;
@@ -236,6 +248,7 @@ class HandleButtonClicks{
                     this.DisplayInstance.renderDisplay(this.math.toLocaleString(),this.result);                    
                     this.state.isResultDisplayed = false;                    
                 }
+
                if(this.state.previousOperand === "" && this.state.currentOperand !== "" && this.state.operation==="" && this.state.percentageType==="" && this.state.currentOperandIsPercentageValue===true){//handle percentage operations
                     // Graduate current to previous if this is the first operator
                     this.state.previousOperand = this.state.currentOperand;
@@ -243,25 +256,28 @@ class HandleButtonClicks{
                     this.state.operation=this.button.textContent;
                     this.state.isResultDisplayed = false;
                     this.state.currentOperandIsPercentageValue=false; 
-                    this.result="";                          
-                    this.math=`${this.state.previousOperand} ${(this.state.operation)}`;
+                    this.result="";
+                    this.math=`${this.state.previousOperand} ${(this.state.operation)}`;                                              
                     this.DisplayInstance.renderDisplay(this.math.toLocaleString(),this.result);                    
                                  
-                }               
+                } 
+
                  if (this.state.previousOperand !== "" && this.state.currentOperand !== "" && this.state.operation !=="") {
                     this.result = this.calculateFunction(
                         parseFloat(this.state.previousOperand),
                         parseFloat(this.state.currentOperand),
                         this.state.operation
                     );
-                    this.math=`${this.state.previousOperand.toLocaleString()} ${this.state.operation} ${this.state.currentOperand.toLocaleString()}`;                    
+
+                    this.math=`${this.state.previousOperand.toLocaleString()} ${this.state.operation} ${this.state.currentOperand.toLocaleString()}`;     
                     this.DisplayInstance.renderDisplay(this.math,this.result.toLocaleString());                    
                     this.state.previousOperand = this.result;//as soon as calculated graduated to previous operand .toString()
                     this.state.currentOperand = "";
                     this.state.isResultDisplayed = true;                       
-                }                     
-                break;
+                }
 
+            break;
+  
             case "equals":
                 if (this.state.previousOperand === "" || this.state.currentOperand === "" || this.state.operation==="" ) return;
                 if (this.state.previousOperand !== "" && this.state.currentOperand !== "" && this.state.operation!=="" ){
@@ -271,7 +287,11 @@ class HandleButtonClicks{
                         this.state.operation
                         );//utilizing the global calculate function
                         // Update state
-                    this.math=`${this.state.previousOperand} ${this.state.operation} ${this.state.currentOperand}`;                    
+                    if(this.state.operation==="xʸ"){
+                        this.math=`${this.state.previousOperand} ^ ${this.state.currentOperand.toLocaleString()}`;
+                    }else{
+                        this.math=`${this.state.previousOperand} ${this.state.operation} ${this.state.currentOperand}`;  
+                    }                                            
                     this.DisplayInstance.renderDisplay(this.math.toLocaleString(),this.result.toLocaleString());             
                     this.state.currentOperand = this.result; //the result stored as current operand now .toString()
                     this.state.previousOperand = "";
@@ -290,7 +310,7 @@ class HandleButtonClicks{
                 break;
         
     ////////////////////////////unary operators///////////////////////////////
-// currentOperand: 6, previousOperand: "", operation: "", isResultDisplayed: true }
+
         case "positive-negative":
             if(this.state.currentOperand !=="" && this.state.isResultDisplayed===true){
                 this.state.currentOperand=parseFloat(this.state.currentOperand) * -1;
@@ -299,10 +319,6 @@ class HandleButtonClicks{
             }
             this.state.currentOperand=this.state.currentOperand*-1;
             this.DisplayInstance.renderDisplay(this.state.currentOperand,"")
-        break;
-
-        case "exponent":
-
         break;
 
         case "two decimals":
@@ -324,10 +340,6 @@ class HandleButtonClicks{
 
         break;
 
-        case "square root":
-
-        break;
-
         case "percentage":
            if(this.state.currentOperand==="" || this.state.previousOperand==="" || this.state.operation==="" ||this.state.operation===undefined) return;
             this.state.percentageType=this.state.operation;
@@ -341,14 +353,27 @@ class HandleButtonClicks{
             this.state.percentageType="";
             this.state.currentOperandIsPercentageValue=true;
         break;
-
+/////////////////////// non math operations ///////////////////////////////////////////////////////
         case "delete":
 
         break;
 
-        case "pie":
+        case "memory recall":
 
         break;
+
+        case  "memory clear":
+
+        break;
+
+        case  "memory minus":
+
+        break;
+
+        case "memory plus":
+
+        break;
+
 
         }
     }
