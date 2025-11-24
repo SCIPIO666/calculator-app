@@ -1,8 +1,6 @@
 //------------global variables for state management--------------------------------//
 const mathDisplayPanel=document.querySelector("#math");//display screen
 const resultDisplayPanel=document.querySelector("#result");//display screen
-let latestResult;//calculate latest computation prompt
-let CurrentState=[];//to keep track of user current step
 let calculationsMemory=[];//save objects of operators ,operands and results for each computation
 
 let calculatorState = {
