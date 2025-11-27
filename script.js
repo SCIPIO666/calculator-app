@@ -12,6 +12,7 @@ let calculatorState = {
     currentOperandIsPercentageValue: false,
     resultsInMemory: [],//save calculated results
     currentMemoryCalculation: "",
+    memoryValue: "",
 };
 
 
@@ -178,6 +179,7 @@ switch(true){
     case button.classList.contains("number") : return "number";
     case button.classList.contains("del") : return "delete";
     case button.classList.contains("mr") : return "memory recall";
+    case button.classList.contains("ms") : return "memory store";
     case button.classList.contains("mc") : return "memory clear";
     case button.classList.contains("m-minus") : return "memory minus";
     case button.classList.contains("m-plus") : return "memory plus";
@@ -409,34 +411,82 @@ class HandleButtonClicks{
             this.state.currentOperandIsPercentageValue=true;
         break;
 /////////////////////// non math operations ///////////////////////////////////////////////////////
-        case "delete":
+     case "delete":
+                if (this.state.currentOperand !== "") {
+                    this.state.currentOperand = this.state.currentOperand.slice(0, -1);
+                    this.DisplayInstance.renderDisplay(
+                        `${this.state.previousOperand.toLocaleString()} ${this.state.operation} ${this.state.currentOperand.toLocaleString()}`, 
+                        ""
+                    );
+                } else if (this.state.operation !== "") {
+                    // If currentOperand is empty, delete the operator
+                    this.state.operation = "";
+                    this.DisplayInstance.renderDisplay(this.state.previousOperand.toLocaleString(), "");
+                }
+    break;
 
-        break;
+    case "memory clear":
+                this.state.memoryValue = ""; // Clear the memory value
+                // In a real calculator, MC doesn't change the display, so no display update needed.
+                // You might update a small 'M' indicator on the screen if you had one.
+                console.log("Memory Cleared (MC). Value is now: " + this.state.memoryValue);
+                break;
 
-        case "memory recall":
+    case "memory recall":
+                if (this.state.memoryValue === "") return; // Nothing to recall
 
-        break;
+                // Replace the current operand with the memory value
+                this.state.currentOperand = this.state.memoryValue.toString();
+                this.state.isResultDisplayed = false; // Treat it as new input
+                
+                this.DisplayInstance.renderDisplay(
+                    `${this.state.previousOperand.toLocaleString()} ${this.state.operation} ${this.state.currentOperand.toLocaleString()}`,
+                    ""
+                );
+                console.log("Memory Recalled (MR): " + this.state.memoryValue);
+                break;
 
-        case  "memory clear":
+    case "memory store": // Assuming a generic 'MS' button to store the display value
+                // Use the currently displayed number for storage
+                let valueToStore = parseFloat(getDisplayValue(this.state));
+                if (!isNaN(valueToStore)) {
+                    this.state.memoryValue = valueToStore;
+                    console.log("Memory Stored (MS). Value: " + this.state.memoryValue);
+                }
+    break;
 
-        break;
+    case "memory minus":
+                // Get the current number from the display/state
+                let minusValue = parseFloat(getDisplayValue(this.state));
+                let currentMemoryMMinus = parseFloat(this.state.memoryValue || "0"); // Start with 0 if memory is empty
+                
+                if (!isNaN(minusValue)) {
+                    this.state.memoryValue = currentMemoryMMinus - minusValue;
+                    console.log("Memory Minus (M-). New Memory Value: " + this.state.memoryValue);
+                }
+    break;
 
-        case  "memory minus":
-
-        break;
-
-        case "memory plus":
-
-        break;
+    case "memory plus":
+                // Get the current number from the display/state
+                let plusValue = parseFloat(getDisplayValue(this.state));
+                let currentMemoryMPlus = parseFloat(this.state.memoryValue || "0"); // Start with 0 if memory is empty
+                
+                if (!isNaN(plusValue)) {
+                    this.state.memoryValue = currentMemoryMPlus + plusValue;
+                    console.log("Memory Plus (M+). New Memory Value: " + this.state.memoryValue);
+                }
+    break;
+                
             
-        case "prev":
+    case "prev":
             this.retrievePrevCalculation();
             console.log(this.state.resultsInMemory);
-        break;
-        case  "next":
+    break;
+
+    case  "next":
             this.retrieveNextCalculation();
             console.log(this.state.resultsInMemory);            
-        break;     
+    break;     
 
         }
     }
