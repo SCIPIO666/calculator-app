@@ -352,7 +352,6 @@ class HandleButtonClicks{
                     this.state.isResultDisplayed = true;
                 }
                 console.log(this.state.resultsInMemory)
-                console.log(this.state.resultsInMemory)
                 break;
 
             case "ac":
@@ -418,7 +417,7 @@ class HandleButtonClicks{
                     this.state.currentOperand = this.state.currentOperand.slice(0, -1);                                                       
                 }else   if(this.state.operation === "" && this.state.currentOperand ==="" && this.state.previousOperand!=="" )  {
                      this.state.previousOperand = this.state.previousOperand.slice(0, -1);                                         
-                 }     //handles previous operand
+                 }     
                  
                 this.DisplayInstance.renderDisplay(
                         `${this.state.previousOperand.toLocaleString()} ${this.state.operation} ${this.state.currentOperand.toLocaleString()}`, 
@@ -434,7 +433,6 @@ class HandleButtonClicks{
 
     case "memory recall":
                 if (this.state.memoryValue === "") return; // Nothing to recall
-                // Replace the current operand with the memory value
                 this.state.currentOperand = this.state.memoryValue.toString();
                 this.state.isResultDisplayed = false;         
                 this.DisplayInstance.renderDisplay(
@@ -446,31 +444,50 @@ class HandleButtonClicks{
 
     case "memory store": // Assuming a generic 'MS' button to store the display value
                 // Use the currently displayed number for storage
-                const valueToStore=parseFloat(document.getElementById("result").value)
-                if (valueToStore) {
-                    this.state.memoryValue = valueToStore;
-                    console.log("Memory Stored (MS). Value: " + this.state.memoryValue);
-                }
+                const valueToStore=parseFloat(document.getElementById("result").textContent);
+                this.state.memoryValue = valueToStore;
+                console.log("Memory Stored (MS). Value: " + this.state.memoryValue);
     break;
 
     case "memory minus":
+        //current number minus memory number
                 // Get the current number from the display/state
-                let minusValue = parseFloat(this.state.memoryValue);
-                let currentMemoryMinus = parseFloat(this.state.memoryValue || "0"); // Start with 0 if memory is empty            
-                    this.state.memoryValue = currentMemoryMMinus - minusValue;
+
+                let minusValue = parseFloat(this.state.memoryValue);              
+                let currentMemoryMinus = parseFloat(this.state.memoryValue || "0"); // Start with 0 if memory is empty  
+                this.state.previousOperand=this.state.currentOperand;
+                this.state.operation="-"; 
+                this.state.currentOperand=currentMemoryMinus                                      
+                this.math= this.mathDisplay(); 
+                this.result=this.calculateFunction(parseFloat(this.state.previousOperand),
+                                parseFloat(this.state.currentOperand),
+                                this.state.operation
+                )
+
+                    this.state.memoryValue = this.result;
+                    this.DisplayInstance.renderDisplay(this.math,this.result);
                     console.log("Memory Minus (M-). New Memory Value: " + this.state.memoryValue);
 
     break;
 
     case "memory plus":
-                // Get the current number from the display/state
-                let plusValue = parseFloat(getDisplayValue(this.state));
-                let currentMemoryMPlus = parseFloat(this.state.memoryValue || "0"); // Start with 0 if memory is empty
-                
-                if (!isNaN(plusValue)) {
-                    this.state.memoryValue = currentMemoryMPlus + plusValue;
+        //current number plus memory number
+        // Get the current number from the display/state
+
+                let plusValue = parseFloat(this.state.memoryValue);              
+                let currentMemoryPlus = parseFloat(this.state.memoryValue || "0"); // Start with 0 if memory is empty  
+                this.state.previousOperand=this.state.currentOperand;
+                this.state.operation="+"; 
+                this.state.currentOperand=currentMemoryPlus;                                    
+                this.math= this.mathDisplay(); 
+                this.result=this.calculateFunction(parseFloat(this.state.previousOperand),
+                                parseFloat(this.state.currentOperand),
+                                this.state.operation
+                )
+
+                    this.state.memoryValue = this.result;
+                    this.DisplayInstance.renderDisplay(this.math,this.result);
                     console.log("Memory Plus (M+). New Memory Value: " + this.state.memoryValue);
-                }
     break;
                 
             
@@ -486,6 +503,9 @@ class HandleButtonClicks{
 
         }
     }
+ mathDisplay(){
+    return `${this.state.previousOperand} ${this.state.operation} ${this.state.currentOperand}`; 
+}   
 }
 
 //---------------------------------------------initializing  the calculator-----------------------------//
